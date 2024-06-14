@@ -161,8 +161,8 @@ do
     local IsValid = IsValid
     local math_random = math.random
 
-    local skipChance = 0.6
-    local itemSteps = 20
+    local skipChance = 0.75
+    local itemSteps = 30
     local boneBreakSoundChance = 0.35
     local painSoundChance = 0.1
 
@@ -255,7 +255,7 @@ do
         local queue = setupSquence( ent )
 
         local timerName = "youneedme_bonemanipulation_" .. ent:EntIndex()
-        timer.Create( timerName, 0.03, 0, function()
+        timer.Create( timerName, 0.02, 0, function()
             local queueCount = #queue
 
             -- Break if we're done
@@ -301,5 +301,161 @@ do
                 table.remove( queue, queueIdx )
             end
         end )
+    end
+
+end
+
+do
+    local function makeGman( pos, headPos )
+        local gman = ents.Create( "npc_gman" )
+        gman:SetPos( pos )
+        gman:Spawn()
+
+        gman:SetCollisionGroup( COLLISION_GROUP_IN_VEHICLE )
+
+        local exclude = {
+            [5] = true,
+            [6] = true,
+        }
+
+        -- TODO: We should really do this on client somewhere
+        timer.Simple( 0, function()
+            local small = Vector( 0.01, 0.01, 0.01 )
+
+            for i = 1, gman:GetBoneCount() do
+                if not exclude[i] then
+                    gman:ManipulateBoneScale( i, small )
+                end
+            end
+        end )
+
+        -- Long neck
+        local timerName = "gman_adjuster_" .. SysTime()
+
+        local step = 1
+        local steps = 15
+        local stepSize = headPos / steps
+
+        timer.Create( timerName, 0.1, 0, function()
+            if not IsValid( gman ) then
+                timer.Remove( timerName )
+                return
+            end
+
+            local shouldSkip = math.random() < 0.75
+            if shouldSkip then return end
+
+            gman:ManipulateBonePosition( 6, step * stepSize )
+            step = step + 1
+
+            if step > steps then
+                timer.Remove( timerName )
+            end
+        end )
+
+        return gman
+    end
+
+    local function generateArc( center, radius, startAngle, endAngle, steps )
+        local points = {}
+        for i = 0, steps do
+            local angle = startAngle + (endAngle - startAngle) * (i / steps)
+            local x = center.x + radius * math.cos( math.rad( angle ) )
+            local y = center.y
+            local z = center.z + radius * math.sin( math.rad( angle ) )
+            table.insert( points, Vector( x, y, z ) )
+        end
+        return points
+    end
+
+    local center = Vector( 0, 25, 0 )
+    local radius = 80
+    local startAngle = -45
+    local endAngle = 45
+    local gmenCount = 6 - 1
+    local arcPoints = generateArc( center, radius, startAngle, endAngle, gmenCount )
+
+    local sounds = {
+        {
+            snd = "vo/citadel/br_youneedme.wav",
+            duration = 1.5195918083191,
+            pitch = 90,
+            level = 100
+        },
+        {
+            snd = "vo/npc/alyx/uggh01.wav",
+            duration = 0.52707481384277
+        },
+        {
+            snd = "vo/npc/alyx/hurt05.wav",
+            duration = 0.78956913948059
+        }
+    }
+
+    local function getSound( idx )
+        return sounds[((idx - 1) % #sounds) + 1]
+    end
+
+    local function makeGmen( base )
+        local timerPrefix = "gman_sound_" .. SysTime()
+
+        local pos = base:GetPos()
+        local gmen = {}
+
+        for i, arcPos in ipairs( arcPoints ) do
+            local gman = makeGman( pos, arcPos )
+            gman:SetPos( pos + Vector( 0, 0, 18 ) )
+
+            gmen[i] = gman
+
+            timer.Simple( i * 0.15, function()
+                local snd = getSound( i )
+                local path = snd.snd
+                local level = snd.level or 75
+                local pitch = snd.pitch or 100
+
+                local timerName = timerPrefix .. "_" .. i
+                timer.Create( timerName, snd.duration * 1.3, 0, function()
+                    if not IsValid( gman ) then
+                        timer.Remove( timerName )
+                        return
+                    end
+
+                    gman:EmitSound( path, level, pitch, 1, CHAN_VOICE )
+                end )
+            end )
+        end
+
+        local hookName = "gman_position_" .. SysTime()
+        hook.Add( "Think", hookName, function()
+            if not IsValid( base ) then
+                for _, gman in ipairs( gmen ) do
+                    if IsValid( gman ) then
+                        gman:Remove()
+                    end
+                end
+
+                hook.Remove( "Think", hookName )
+                return
+            end
+
+            local basePos = base:GetPos()
+            local offset = base:GetForward() * -10
+
+            local baseAng = base:GetAngles()
+            baseAng.p = 0
+
+            for _, gman in ipairs( gmen ) do
+                if IsValid( gman ) then
+                    gman:SetPos( basePos + offset )
+                    gman:SetAngles( baseAng )
+                end
+            end
+        end )
+
+    end
+
+    function YNM:EruptGmen( ent )
+        makeGmen( ent )
     end
 end
