@@ -160,6 +160,7 @@ end
 do
     local IsValid = IsValid
     local math_random = math.random
+    local sound_play = sound.Play
 
     local skipChance = 0.75
     local itemSteps = 30
@@ -204,7 +205,7 @@ do
 
         local soundName = boneBreakSounds[math_random( 1, boneBreakSoundCount )]
         local pitch = math_random( 50, 150 )
-        sound.Play( soundName, ent:GetPos(), 75, pitch, 1 )
+        sound_play( soundName, ent:GetPos(), 75, pitch, 1 )
     end
 
     local function painSound( ent )
