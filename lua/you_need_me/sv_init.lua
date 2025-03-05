@@ -199,7 +199,7 @@ do
     }
     local boneBreakSoundCount = #boneBreakSounds
 
-    local function boneBreakSound( ent )
+    local function playBoneBreakSound( ent )
         local shouldPlay = math_random() < boneBreakSoundChance
         if not shouldPlay then return end
 
@@ -208,7 +208,7 @@ do
         sound_play( soundName, ent:GetPos(), 75, pitch, 1 )
     end
 
-    local function painSound( ent )
+    local function playPainSound( ent )
         local shouldPlay = math_random() < painSoundChance
         if not shouldPlay then return end
 
@@ -294,8 +294,8 @@ do
             func( ent, queueItem.bone, newValue )
 
             -- Play sounds
-            boneBreakSound( ent )
-            painSound( ent )
+            playBoneBreakSound( ent )
+            playPainSound( ent )
 
             -- Remove the item from the queue if we're done with it
             if newSteps == itemSteps then
