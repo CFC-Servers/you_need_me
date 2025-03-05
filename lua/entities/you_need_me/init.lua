@@ -11,17 +11,20 @@ function ENT:Initialize()
     end )
 end
 
-local function randomizePose( kleiner )
-    local flexCount = kleiner:GetFlexNum()
+---Randomizes the flex values of a given NPC
+---@param npc Entity
+local function randomizeFlexes( npc )
+    local maxFlexes = 96
+    local flexCount = math.min( maxFlexes, npc:GetFlexNum() )
 
-    for i = 1, (math.min( flexCount, 96 ) - 1) do
-        local min, max = kleiner:GetFlexBounds( i )
+    for i = 1, flexCount - 1 do
+        local min, max = npc:GetFlexBounds( i )
         local val = math.Rand( min, max )
 
-        kleiner:SetFlexWeight( i, val )
+        npc:SetFlexWeight( i, val )
     end
 
-    kleiner:SetFlexScale( math.Rand( 3, 5 ) )
+    npc:SetFlexScale( math.Rand( 3, 5 ) )
 end
 
 local function makeKleiner( pos )
