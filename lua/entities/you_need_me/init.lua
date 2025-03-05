@@ -64,7 +64,7 @@ local function makeKleiner( pos )
     local kleinerSound = "ambient/energy/force_field_loop1.wav"
     k:EmitSound( kleinerSound, 75, 60, 1, CHAN_VOICE )
 
-    k:CallOnRemove( "stopsound", function()
+    k:CallOnRemove( "YouNeedMe_KleinerSoundStop", function()
         k:StopSound( kleinerSound )
     end )
 
@@ -140,7 +140,7 @@ do
     end
 
     makeGmen = function( kleiner )
-        local timerPrefix = "gman_sound_" .. os.time()
+        local timerPrefix = "YouNeedMe_GmanSound_Entity_" .. SysTime()
 
         local pos = kleiner:GetPos()
 
@@ -171,7 +171,7 @@ end
 
 function ENT:StartKleinerLoop()
     local kleiner = self.Kleiner
-    local timerName = "kleiner_loop_" .. self:EntIndex()
+    local timerName = "YouNeedMe_KleinerLoop_" .. self:EntIndex()
 
     timer.Create( timerName, 5, 0, function()
         if not IsValid( kleiner ) then return end
@@ -194,7 +194,7 @@ function ENT:StartKleinerLoop()
         kleiner:SetSchedule( SCHED_FORCED_GO_RUN )
     end )
 
-    kleiner:CallOnRemove( "stop_kleiner_loop", function()
+    kleiner:CallOnRemove( "YouNeedMe_KleinerLoopStop", function()
         timer.Remove( timerName )
     end )
 end
@@ -204,7 +204,7 @@ function ENT:SetupNPCs()
 
     local kleiner = makeKleiner( pos )
     self.Kleiner = kleiner
-    self:CallOnRemove( "remove_kleiner", function()
+    self:CallOnRemove( "YouNeedMe_KleinerRemove", function()
         if IsValid( kleiner ) then
             kleiner:Remove()
         end

@@ -255,7 +255,7 @@ do
 
         local queue = setupSquence( ent )
 
-        local timerName = "youneedme_bonemanipulation_" .. ent:EntIndex()
+        local timerName = "YouNeedMe_BoneManipulation_" .. ent:EntIndex()
         timer.Create( timerName, 0.02, 0, function()
             local queueCount = #queue
 
@@ -331,7 +331,7 @@ do
         end )
 
         -- Long neck
-        local timerName = "gman_adjuster_" .. SysTime()
+        local timerName = "YouNeedMe_GmanGrowth_" .. SysTime()
 
         local step = 1
         local steps = 15
@@ -398,7 +398,7 @@ do
     end
 
     local function makeGmen( base )
-        local timerPrefix = "gman_sound_" .. SysTime()
+        local timerPrefix = "YouNeedMe_GmanSound_" .. SysTime()
 
         local pos = base:GetPos()
         local gmen = {}
@@ -427,7 +427,7 @@ do
             end )
         end
 
-        local hookName = "gman_position_" .. SysTime()
+        local hookName = "YouNeedMe_GmanPosition_" .. SysTime()
         hook.Add( "Think", hookName, function()
             if not IsValid( base ) then
                 for _, gman in ipairs( gmen ) do
