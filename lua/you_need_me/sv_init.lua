@@ -7,9 +7,14 @@ local YNM = YouNeedMe
 
 --- @class Entity
 local EntMeta = FindMetaTable( "Entity" )
+
 local ManipulateBoneScale = EntMeta.ManipulateBoneScale
 local ManipulateBoneAngles = EntMeta.ManipulateBoneAngles
 local ManipulateBonePosition = EntMeta.ManipulateBonePosition
+
+local IsValid = IsValid
+local math_random = math.random
+local sound_play = sound.Play
 
 --- @class YNM_BoneManipulation
 --- @field func function
@@ -158,10 +163,6 @@ function YNM:ManipulateBaseEntity( ent )
 end
 
 do
-    local IsValid = IsValid
-    local math_random = math.random
-    local sound_play = sound.Play
-
     local skipChance = 0.75
     local itemSteps = 30
     local boneBreakSoundChance = 0.35
