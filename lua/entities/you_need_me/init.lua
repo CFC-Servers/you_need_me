@@ -11,8 +11,8 @@ function ENT:Initialize()
     end )
 end
 
----Randomizes the flex values of a given NPC
----@param npc Entity
+--- Randomizes the flex values of a given NPC
+--- @param npc Entity
 local function randomizeFlexes( npc )
     local maxFlexes = 96
     local flexCount = math.min( maxFlexes, npc:GetFlexNum() )
@@ -28,50 +28,51 @@ local function randomizeFlexes( npc )
 end
 
 local function makeKleiner( pos )
-    local k = ents.Create( "npc_kleiner" )
-    k:SetPos( pos + Vector( 0, 0, 18 ) )
-    k:Spawn()
+    local kleiner = ents.Create( "npc_kleiner" )
 
-    k:ManipulateBoneAngles( 6, Angle( 0, 95, 0 ) ) -- head
-    k:ManipulateBoneAngles( 5, Angle( 0, 25, 0 ) ) -- neck
-    k:ManipulateBoneAngles( 1, Angle( 0, 105, 0 ) ) -- waist
+    kleiner:SetPos( pos + Vector( 0, 0, 18 ) )
+    kleiner:Spawn()
 
-    k:ManipulateBoneScale( 6, Vector( 1.2, 1.2, 1.2 ) ) -- head size
-    k:ManipulateBonePosition( 6, Vector( 10, 5, 0 ) ) -- head position
-    k:ManipulateBonePosition( 5, Vector( 5, 10, 0 ) ) -- neck position
-    k:ManipulateBoneAngles( 4, Angle( 0, -20, 0 ) ) -- top spine angle
+    kleiner:ManipulateBoneAngles( 6, Angle( 0, 95, 0 ) ) -- head
+    kleiner:ManipulateBoneAngles( 5, Angle( 0, 25, 0 ) ) -- neck
+    kleiner:ManipulateBoneAngles( 1, Angle( 0, 105, 0 ) ) -- waist
+
+    kleiner:ManipulateBoneScale( 6, Vector( 1.2, 1.2, 1.2 ) ) -- head size
+    kleiner:ManipulateBonePosition( 6, Vector( 10, 5, 0 ) ) -- head position
+    kleiner:ManipulateBonePosition( 5, Vector( 5, 10, 0 ) ) -- neck position
+    kleiner:ManipulateBoneAngles( 4, Angle( 0, -20, 0 ) ) -- top spine angle
 
 
     -- long back
-    k:ManipulateBonePosition( 2, Vector( 5, 0, 0 ) )
-    k:ManipulateBonePosition( 3, Vector( 5, 0, 0 ) )
-    k:ManipulateBonePosition( 4, Vector( 5, 0, 0 ) )
+    kleiner:ManipulateBonePosition( 2, Vector( 5, 0, 0 ) )
+    kleiner:ManipulateBonePosition( 3, Vector( 5, 0, 0 ) )
+    kleiner:ManipulateBonePosition( 4, Vector( 5, 0, 0 ) )
 
     -- left arm
-    k:ManipulateBoneAngles( 13, Angle( 0, 0, -90 ) )
+    kleiner:ManipulateBoneAngles( 13, Angle( 0, 0, -90 ) )
 
     -- right arm
-    k:ManipulateBoneAngles( 8, Angle( 0, 0, 90 ) )
-    k:ManipulateBonePosition( 9, Vector( 10, -10, -5 ) )
+    kleiner:ManipulateBoneAngles( 8, Angle( 0, 0, 90 ) )
+    kleiner:ManipulateBonePosition( 9, Vector( 10, -10, -5 ) )
 
     -- move thighs outward
-    k:ManipulateBonePosition( 18, Vector( -15, 0, -20 ) ) -- r
-    k:ManipulateBonePosition( 22, Vector( 15, 0, -20 ) ) -- l
+    kleiner:ManipulateBonePosition( 18, Vector( -15, 0, -20 ) ) -- r
+    kleiner:ManipulateBonePosition( 22, Vector( 15, 0, -20 ) ) -- l
 
     -- calves
-    k:ManipulateBonePosition( 19, Vector( 10, 20, 0 ) ) -- r
-    k:ManipulateBonePosition( 23, Vector( 10, 20, 0 ) ) -- l
+    kleiner:ManipulateBonePosition( 19, Vector( 10, 20, 0 ) ) -- r
+    kleiner:ManipulateBonePosition( 23, Vector( 10, 20, 0 ) ) -- l
 
-    randomizePose( k )
+    randomizeFlexes( kleiner )
 
     local kleinerSound = "ambient/energy/force_field_loop1.wav"
-    k:EmitSound( kleinerSound, 75, 60, 1, CHAN_VOICE )
+    kleiner:EmitSound( kleinerSound, 75, 60, 1, CHAN_VOICE )
 
-    k:CallOnRemove( "YouNeedMe_KleinerSoundStop", function()
-        k:StopSound( kleinerSound )
+    kleiner:CallOnRemove( "YouNeedMe_KleinerSoundStop", function()
+        kleiner:StopSound( kleinerSound )
     end )
 
-    return k
+    return kleiner
 end
 
 
