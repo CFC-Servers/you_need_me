@@ -115,7 +115,6 @@ function YNM.SetBoneManipulations( ent, boneManipulations )
     end
 end
 
-
 --- Resets the position, angle, and scale of all bones on an Entity
 ---@param ent Entity The Entity whose bones will be reset
 function YNM.ResetBoneManipulations( ent )
@@ -248,21 +247,20 @@ do
             if shouldSkip then return end
 
             -- Pick a random item from the queue
-            local queueIdx = math_random( 1, queueCount )
-            local queueItem = queue[queueIdx]
+            local queueId, item = table.Random( queue )
 
             -- Decide what the new value should be
-            local steps = queueItem.steps
+            local steps = item.steps
             local max = math.min( itemSteps, steps + 3 )
             local newSteps = math_random( steps, max )
-            local newValue = queueItem.perStep * newSteps
+            local newValue = item.perStep * newSteps
 
             -- Update current step count
-            queueItem.steps = newSteps
+            item.steps = newSteps
 
             -- Update the bone
-            local func = queueItem.func
-            func( ent, queueItem.bone, newValue )
+            local func = item.func
+            func( ent, item.bone, newValue )
 
             -- Play sounds
             playBoneBreakSound( ent )
@@ -270,7 +268,7 @@ do
 
             -- Remove the item from the queue if we're done with it
             if newSteps == itemSteps then
-                table.remove( queue, queueIdx )
+                table.remove( queue, queueId )
             end
         end )
     end
