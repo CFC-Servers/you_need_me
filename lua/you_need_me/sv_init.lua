@@ -204,7 +204,7 @@ do
         local shouldPlay = math_random() < boneBreakSoundChance
         if not shouldPlay then return end
 
-        local soundName = boneBreakSounds[math_random( 1, boneBreakSoundCount )]
+        local soundName = boneBreakSounds[ math_random( 1, boneBreakSoundCount ) ]
         local pitch = math_random( 50, 150 )
         sound_play( soundName, ent:GetPos(), 75, pitch, 1 )
     end
@@ -213,7 +213,7 @@ do
         local shouldPlay = math_random() < painSoundChance
         if not shouldPlay then return end
 
-        local soundName = painSounds[math_random( 1, painSoundCount )]
+        local soundName = painSounds[ math_random( 1, painSoundCount ) ]
         ent:EmitSound( soundName, 75, 100, 1, CHAN_VOICE )
     end
 
@@ -224,17 +224,17 @@ do
         -- Precompute some values that make our timer faster probably
         local boneCache = {}
         local function lookupBone( id )
-            local cached = boneCache[id]
+            local cached = boneCache[ id ]
             if cached then return cached end
 
             cached = ent:LookupBone( id )
-            boneCache[id] = cached
+            boneCache[ id ] = cached
 
             return cached
         end
 
         for i = 1, queueCount do
-            local item = queue[i]
+            local item = queue[ i ]
 
             item.steps = 0
             item.perStep = item.value / itemSteps
@@ -279,7 +279,7 @@ do
 
             -- Pick a random item from the queue
             local queueIdx = math_random( 1, queueCount )
-            local queueItem = queue[queueIdx]
+            local queueItem = queue[ queueIdx ]
 
             -- Decide what the new value should be
             local steps = queueItem.steps
@@ -361,7 +361,7 @@ do
     local function generateArc( center, radius, startAngle, endAngle, steps )
         local points = {}
         for i = 0, steps do
-            local angle = startAngle + (endAngle - startAngle) * (i / steps)
+            local angle = startAngle + ( endAngle - startAngle ) * ( i / steps )
             local x = center.x + radius * math.cos( math.rad( angle ) )
             local y = center.y
             local z = center.z + radius * math.sin( math.rad( angle ) )
@@ -395,7 +395,7 @@ do
     }
 
     local function getSound( idx )
-        return sounds[((idx - 1) % #sounds) + 1]
+        return sounds[ ( ( idx - 1 ) % #sounds ) + 1 ]
     end
 
     local function makeGmen( base )
