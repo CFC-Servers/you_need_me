@@ -1,5 +1,7 @@
 AddCSLuaFile( "shared.lua" )
+AddCSLuaFile( "cl_init.lua" )
 include( "shared.lua" )
+include( "cl_init.lua" )
 
 function ENT:Initialize()
     self:SetModel( "models/hunter/blocks/cube025x025x025.mdl" )
@@ -115,7 +117,7 @@ do
     }
 
     local function getSound( idx )
-        return sounds[ ( ( idx - 1 ) % #sounds ) + 1 ]
+        return sounds[( ( idx - 1 ) % #sounds ) + 1]
     end
 
     local function makeGman( pos, headPos )

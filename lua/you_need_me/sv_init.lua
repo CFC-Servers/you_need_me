@@ -1,166 +1,136 @@
-
 --- @class YouNeedMe
-YouNeedMe = {}
+YouNeedMe = YouNeedMe or {}
 
---- @class YouNeedMe
+---@class YouNeedMe
 local YNM = YouNeedMe
 
---- @class Entity
-local EntMeta = FindMetaTable( "Entity" )
+-- #region Class Definitions
 
-local ManipulateBoneScale = EntMeta.ManipulateBoneScale
-local ManipulateBoneAngles = EntMeta.ManipulateBoneAngles
-local ManipulateBonePosition = EntMeta.ManipulateBonePosition
+--- @class YouNeedMe.BoneManipulationData
+--- @field BoneName string The name of the bone being manipulated
+--- @field PositionOffset Vector? The positional offset of the bone, relative to the bone's original position of (0, 0, 0)
+--- @field AngleOffset Angle? The angular offset of the bone, relative to the bone's original angle of (0, 0, 0)
+--- @field Scale Vector? The scale of the bone, relative to the bone's original scale of (1, 1, 1)
+
+-- #endregion
+
+-- #region Localized Functions
 
 local IsValid = IsValid
 local math_random = math.random
 local sound_play = sound.Play
 
---- @class YNM_BoneManipulation
---- @field func function
---- @field bone string
---- @field value any
+--#endregion
 
---- @type table<YNM_BoneManipulation>
+-- #region Constants
+
+local DEFAULT_BONE_POSITION_OFFSET  = Vector( 0, 0, 0 )
+local DEFAULT_BONE_ANGLE_OFFSET     = Angle ( 0, 0, 0 )
+local DEFAULT_BONE_SCALE            = Vector( 1, 1, 1 )
+
+--- @type YouNeedMe.BoneManipulationData[]
 YNM.BaseEntityManipulations = {
-    {
-        -- Head facing
-        func = ManipulateBoneAngles,
-        bone = "ValveBiped.Bip01_Head1",
-        value = Angle( 0, 95, 0 ),
-        default = Angle( 0, 0, 0 )
+    { -- Head
+        BoneName        = "ValveBiped.Bip01_Head1",
+        PositionOffset  = Vector( 10, 5, 0 ),
+        AngleOffset     = Angle ( 0, 95, 0 ),
+        Scale           = Vector( 1.2, 1.2, 1.2 )
     },
-    {
-        -- Neck cricking
-        func = ManipulateBoneAngles,
-        bone = "ValveBiped.Bip01_Neck1",
-        value = Angle( 0, 25, 0 ),
-        default = Angle( 0, 0, 0 )
+    { -- Neck
+        BoneName        = "ValveBiped.Bip01_Neck1",
+        PositionOffset  = Vector( 5, 10, 0 ),
+        AngleOffset     = Angle ( 0, 25, 0 )
     },
-    {
-        -- Waist bneding
-        func = ManipulateBoneAngles,
-        bone = "ValveBiped.Bip01_Spine",
-        value = Angle( 0, 105, 0 ),
-        default = Angle( 0, 0, 0 )
+    { -- Waist
+        BoneName        = "ValveBiped.Bip01_Spine",
+        AngleOffset     = Angle ( 0, 105, 0 )
     },
-
-    {
-        -- Head Size
-        func = ManipulateBoneScale,
-        bone = "ValveBiped.Bip01_Head1",
-        value = Vector( 1.2, 1.2, 1.2 ),
-        default = Vector( 1, 1, 1 )
+    { -- Spine 1
+        BoneName        = "ValveBiped.Bip01_Spine1",
+        PositionOffset  = Vector( 5, 0, 0 )
     },
-    {
-        -- Head Position
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_Head1",
-        value = Vector( 10, 5, 0 ),
-        default = Vector( 0, 0, 0 )
+    { -- Spine 2
+        BoneName        = "ValveBiped.Bip01_Spine2",
+        PositionOffset  = Vector( 5, 0, 0 )
     },
-    {
-        -- Neck Position
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_Neck1",
-        value = Vector( 5, 10, 0 ),
-        default = Vector( 0, 0, 0 )
+    { -- Spine 4
+        BoneName        = "ValveBiped.Bip01_Spine4",
+        AngleOffset     = Angle( 0, -20, 0 ),
+        PositionOffset  = Vector( 5, 0, 0 )
     },
-    {
-        -- Top spine angle
-        func = ManipulateBoneAngles,
-        bone = "ValveBiped.Bip01_Spine4",
-        value = Angle( 0, -20, 0 ),
-        default = Angle( 0, 0, 0 )
+    { -- Left Shoulder
+        BoneName        = "ValveBiped.Bip01_L_Clavicle",
+        AngleOffset     = Angle( 0, 0, -90 )
     },
-
-    {
-        -- Long back
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_Spine1",
-        value = Vector( 5, 0, 0 ),
-        default = Vector( 0, 0, 0 )
+    { -- Right Shoulder
+        BoneName        = "ValveBiped.Bip01_R_Clavicle",
+        AngleOffset     = Angle( 0, 0, 90 )
     },
-    {
-        -- Long back
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_Spine2",
-        value = Vector( 5, 0, 0 ),
-        default = Vector( 0, 0, 0 )
+    { -- Right Arm
+        BoneName        = "ValveBiped.Bip01_R_UpperArm",
+        PositionOffset  = Vector( 10, -10, -5 )
     },
-    {
-        -- Long back
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_Spine4",
-        value = Vector( 5, 0, 0 ),
-        default = Vector( 0, 0, 0 )
+    { -- Right Thigh
+        BoneName        = "ValveBiped.Bip01_R_Thigh",
+        PositionOffset  = Vector( -15, 0, -20 )
     },
-
-    {
-        -- Left arm
-        func = ManipulateBoneAngles,
-        bone = "ValveBiped.Bip01_L_Clavicle",
-        value = Angle( 0, 0, -90 ),
-        default = Angle( 0, 0, 0 )
+    { -- Left Thigh
+        BoneName        = "ValveBiped.Bip01_L_Thigh",
+        PositionOffset  = Vector( 15, 0, -20 )
     },
-
-    {
-        -- Right arm
-        func = ManipulateBoneAngles,
-        bone = "ValveBiped.Bip01_R_Clavicle",
-        value = Angle( 0, 0, 90 ),
-        default = Angle( 0, 0, 0 )
+    { -- Right Calf
+        BoneName        = "ValveBiped.Bip01_R_Calf",
+        PositionOffset  = Vector( 10, 20, 0 )
     },
-    {
-        -- Right arm
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_R_UpperArm",
-        value = Vector( 10, -10, -5 ),
-        default = Vector( 0, 0, 0 )
-    },
-
-    {
-        -- Right thigh outwards
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_R_Thigh",
-        value = Vector( -15, 0, -20 ),
-        default = Vector( 0, 0, 0 )
-    },
-    {
-        -- Left thigh outwards
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_L_Thigh",
-        value = Vector( 15, 0, -20 ),
-        default = Vector( 0, 0, 0 )
-    },
-
-    {
-        -- Right calf
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_R_Calf",
-        value = Vector( 10, 20, 0 ),
-        default = Vector( 0, 0, 0 )
-    },
-    {
-        -- Left calf
-        func = ManipulateBonePosition,
-        bone = "ValveBiped.Bip01_L_Calf",
-        value = Vector( 10, 20, 0 ),
-        default = Vector( 0, 0, 0 )
+    { -- Left Calf
+        BoneName = "ValveBiped.Bip01_L_Calf",
+        PositionOffset = Vector( 10, 20, 0 )
     },
 }
 
---- Manipulates the given Entity's bones to form the base of a YouNeedMe
---- @param ent Player|NPC
-function YNM:ManipulateBaseEntity( ent )
-    for _, v in ipairs( self.BaseEntityManipulations ) do
-        local bone = ent:LookupBone( v.bone )
+-- #endregion
+
+--#region Bone Manipulation Functions
+
+--- Sets the position, angle, and scale of a set of bones on an Entity
+--- @param ent Entity The Entity whose bones will be manipulated
+--- @param boneManipulations YouNeedMe.BoneManipulationData[] The data for the bone manipulations
+function YNM.SetBoneManipulations( ent, boneManipulations )
+    for _, manipulationData in ipairs( YNM.BaseEntityManipulations ) do
+        local bone = ent:LookupBone( manipulationData.BoneName )
 
         if bone then
-            v.func( ent, bone, v.value )
+            if manipulationData.PositionOffset then
+                ent:ManipulateBonePosition( bone, manipulationData.PositionOffset )
+            end
+
+            if manipulationData.AngleOffset then
+                ent:ManipulateBoneAngles( bone, manipulationData.AngleOffset )
+            end
+
+            if manipulationData.Scale then
+                ent:ManipulateBoneScale( bone, manipulationData.Scale )
+            end
         end
     end
 end
+
+
+--- Resets the position, angle, and scale of all bones on an Entity
+---@param ent Entity The Entity whose bones will be reset
+function YNM.ResetBoneManipulations( ent )
+    for _, manipulationData in ipairs( YNM.BaseEntityManipulations ) do
+        local bone = ent:LookupBone( manipulationData.BoneName )
+
+        if bone then
+            ent:ManipulateBonePosition( bone, DEFAULT_BONE_POSITION_OFFSET )
+            ent:ManipulateBoneAngles  ( bone, DEFAULT_BONE_ANGLE_OFFSET    )
+            ent:ManipulateBoneScale   ( bone, DEFAULT_BONE_SCALE           )
+        end
+    end
+end
+
+--#endregion
 
 do
     local skipChance = 0.75
@@ -204,7 +174,7 @@ do
         local shouldPlay = math_random() < boneBreakSoundChance
         if not shouldPlay then return end
 
-        local soundName = boneBreakSounds[ math_random( 1, boneBreakSoundCount ) ]
+        local soundName = boneBreakSounds[math_random( 1, boneBreakSoundCount )]
         local pitch = math_random( 50, 150 )
         sound_play( soundName, ent:GetPos(), 75, pitch, 1 )
     end
@@ -213,7 +183,7 @@ do
         local shouldPlay = math_random() < painSoundChance
         if not shouldPlay then return end
 
-        local soundName = painSounds[ math_random( 1, painSoundCount ) ]
+        local soundName = painSounds[math_random( 1, painSoundCount )]
         ent:EmitSound( soundName, 75, 100, 1, CHAN_VOICE )
     end
 
@@ -224,17 +194,17 @@ do
         -- Precompute some values that make our timer faster probably
         local boneCache = {}
         local function lookupBone( id )
-            local cached = boneCache[ id ]
+            local cached = boneCache[id]
             if cached then return cached end
 
             cached = ent:LookupBone( id )
-            boneCache[ id ] = cached
+            boneCache[id] = cached
 
             return cached
         end
 
         for i = 1, queueCount do
-            local item = queue[ i ]
+            local item = queue[i]
 
             item.steps = 0
             item.perStep = item.value / itemSteps
@@ -251,7 +221,7 @@ do
     --- @param ent Player|NPC
     --- @param onComplete function The function to call when the sequence is complete
     function YNM:ManipulateBaseEntitySequenced( ent, onComplete )
-        -- NO!
+        -- Man yelling "No!"
         ent:EmitSound( "vo/npc/male01/no02.wav", 100, 100, 1, CHAN_VOICE )
 
         local queue = setupSquence( ent )
@@ -279,7 +249,7 @@ do
 
             -- Pick a random item from the queue
             local queueIdx = math_random( 1, queueCount )
-            local queueItem = queue[ queueIdx ]
+            local queueItem = queue[queueIdx]
 
             -- Decide what the new value should be
             local steps = queueItem.steps
@@ -395,7 +365,7 @@ do
     }
 
     local function getSound( idx )
-        return sounds[ ( ( idx - 1 ) % #sounds ) + 1 ]
+        return sounds[( ( idx - 1 ) % #sounds ) + 1]
     end
 
     local function makeGmen( base )
