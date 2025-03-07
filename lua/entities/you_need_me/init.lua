@@ -81,7 +81,7 @@ do
     local function generateArc( center, radius, startAngle, endAngle, steps )
         local points = {}
         for i = 0, steps do
-            local angle = startAngle + (endAngle - startAngle) * (i / steps)
+            local angle = startAngle + ( endAngle - startAngle ) * ( i / steps )
             local x = center.x + radius * math.cos( math.rad( angle ) )
             local y = center.y
             local z = center.z + radius * math.sin( math.rad( angle ) )
@@ -115,7 +115,7 @@ do
     }
 
     local function getSound( idx )
-        return sounds[((idx - 1) % #sounds) + 1]
+        return sounds[ ( ( idx - 1 ) % #sounds ) + 1 ]
     end
 
     local function makeGman( pos, headPos )
@@ -188,7 +188,7 @@ function ENT:StartKleinerLoop()
             local plyPos = ply:GetPos()
             local distance = plyPos:Distance( pos )
 
-            if (not closestPos) or (distance < closestDist) then
+            if ( not closestPos ) or ( distance < closestDist ) then
                 closestPos = plyPos
                 closestDist = distance
             end
