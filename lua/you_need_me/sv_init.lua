@@ -96,7 +96,7 @@ YNM.BaseEntityManipulations = {
 --- @param ent Entity The Entity whose bones will be manipulated
 --- @param boneManipulations YouNeedMe.BoneManipulationData[] The data for the bone manipulations
 function YNM.SetBoneManipulations( ent, boneManipulations )
-    for _, manipulationData in ipairs( YNM.BaseEntityManipulations ) do
+    for _, manipulationData in ipairs( boneManipulations ) do
         local bone = ent:LookupBone( manipulationData.BoneName )
 
         if bone then
