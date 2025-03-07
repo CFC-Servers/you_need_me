@@ -83,8 +83,8 @@ YNM.BaseEntityManipulations = {
         PositionOffset  = Vector( 10, 20, 0 )
     },
     { -- Left Calf
-        BoneName = "ValveBiped.Bip01_L_Calf",
-        PositionOffset = Vector( 10, 20, 0 )
+        BoneName        = "ValveBiped.Bip01_L_Calf",
+        PositionOffset  = Vector( 10, 20, 0 )
     },
 }
 
