@@ -16,9 +16,38 @@ local YNM = YouNeedMe
 
 -- #region Localized Functions
 
-local IsValid = IsValid
+-- Math.*
 local math_random = math.random
-local sound_play = sound.Play
+local math_min = math.min
+local math_cos = math.cos
+local math_sin = math.sin
+local math_rad = math.rad
+
+-- hook.*
+local hook_Add = hook.Add
+local hook_Remove = hook.Remove
+
+-- Sound.*
+local sound_Play = sound.Play
+
+-- table.*
+local table_Random  = table.Random
+local table_remove  = table.remove
+local table_Copy    = table.Copy
+local table_insert  = table.insert
+
+-- timer.*
+local timer_Create = timer.Create
+local timer_Simple = timer.Simple
+local timer_Remove = timer.Remove
+
+-- ents.*
+local ents_Create = ents.Create
+
+-- Misc
+local IsValid = IsValid
+local Vector = Vector
+local Angle = Angle
 
 --#endregion
 
@@ -175,7 +204,7 @@ do
 
         local soundName = boneBreakSounds[math_random( 1, boneBreakSoundCount )]
         local pitch = math_random( 50, 150 )
-        sound_play( soundName, ent:GetPos(), 75, pitch, 1 )
+        sound_Play( soundName, ent:GetPos(), 75, pitch, 1 )
     end
 
     local function playPainSound( ent )
@@ -187,7 +216,7 @@ do
     end
 
     local function setupSquence( ent )
-        local queue = table.Copy( YNM.BaseEntityManipulations )
+        local queue = table_Copy( YNM.BaseEntityManipulations )
         local queueCount = #queue
 
         -- Precompute some values that make our timer faster probably
@@ -226,19 +255,19 @@ do
         local queue = setupSquence( ent )
 
         local timerName = "YouNeedMe_BoneManipulation_" .. ent:EntIndex()
-        timer.Create( timerName, 0.02, 0, function()
+        timer_Create( timerName, 0.02, 0, function()
             local queueCount = #queue
 
             -- Break if we're done
             if queueCount == 0 then
-                timer.Remove( timerName )
+                timer_Remove( timerName )
                 onComplete()
                 return
             end
 
             -- Break if the entity is no longer valid
             if not IsValid( ent ) then
-                timer.Remove( timerName )
+                timer_Remove( timerName )
                 return
             end
 
@@ -247,11 +276,11 @@ do
             if shouldSkip then return end
 
             -- Pick a random item from the queue
-            local queueId, item = table.Random( queue )
+            local queueId, item = table_Random( queue )
 
             -- Decide what the new value should be
             local steps = item.steps
-            local max = math.min( itemSteps, steps + 3 )
+            local max = math_min( itemSteps, steps + 3 )
             local newSteps = math_random( steps, max )
             local newValue = item.perStep * newSteps
 
@@ -268,7 +297,7 @@ do
 
             -- Remove the item from the queue if we're done with it
             if newSteps == itemSteps then
-                table.remove( queue, queueId )
+                table_remove( queue, queueId )
             end
         end )
     end
@@ -277,7 +306,7 @@ end
 
 do
     local function makeGman( pos, headPos )
-        local gman = ents.Create( "npc_gman" )
+        local gman = ents_Create( "npc_gman" )
         gman:SetPos( pos )
         gman:Spawn()
 
@@ -289,7 +318,7 @@ do
         }
 
         -- TODO: We should really do this on client somewhere
-        timer.Simple( 0, function()
+        timer_Simple( 0, function()
             local small = Vector( 0.01, 0.01, 0.01 )
 
             for i = 1, gman:GetBoneCount() do
@@ -306,20 +335,20 @@ do
         local steps = 15
         local stepSize = headPos / steps
 
-        timer.Create( timerName, 0.1, 0, function()
+        timer_Create( timerName, 0.1, 0, function()
             if not IsValid( gman ) then
-                timer.Remove( timerName )
+                timer_Remove( timerName )
                 return
             end
 
-            local shouldSkip = math.random() < 0.75
+            local shouldSkip = math_random() < 0.75
             if shouldSkip then return end
 
             gman:ManipulateBonePosition( 6, step * stepSize )
             step = step + 1
 
             if step > steps then
-                timer.Remove( timerName )
+                timer_Remove( timerName )
             end
         end )
 
@@ -330,10 +359,10 @@ do
         local points = {}
         for i = 0, steps do
             local angle = startAngle + ( endAngle - startAngle ) * ( i / steps )
-            local x = center.x + radius * math.cos( math.rad( angle ) )
+            local x = center.x + radius * math_cos( math_rad( angle ) )
             local y = center.y
-            local z = center.z + radius * math.sin( math.rad( angle ) )
-            table.insert( points, Vector( x, y, z ) )
+            local z = center.z + radius * math_sin( math_rad( angle ) )
+            table_insert( points, Vector( x, y, z ) )
         end
         return points
     end
@@ -378,16 +407,16 @@ do
 
             gmen[i] = gman
 
-            timer.Simple( i * 0.15, function()
+            timer_Simple( i * 0.15, function()
                 local snd = getSound( i )
                 local path = snd.snd
                 local level = snd.level or 75
                 local pitch = snd.pitch or 100
 
                 local timerName = timerPrefix .. "_" .. i
-                timer.Create( timerName, snd.duration * 1.3, 0, function()
+                timer_Create( timerName, snd.duration * 1.3, 0, function()
                     if not IsValid( gman ) then
-                        timer.Remove( timerName )
+                        timer_Remove( timerName )
                         return
                     end
 
@@ -397,7 +426,7 @@ do
         end
 
         local hookName = "YouNeedMe_GmanPosition_" .. SysTime()
-        hook.Add( "Think", hookName, function()
+        hook_Add( "Think", hookName, function()
             if not IsValid( base ) then
                 for _, gman in ipairs( gmen ) do
                     if IsValid( gman ) then
@@ -405,7 +434,7 @@ do
                     end
                 end
 
-                hook.Remove( "Think", hookName )
+                hook_Remove( "Think", hookName )
                 return
             end
 
