@@ -1,12 +1,40 @@
 AddCSLuaFile( "shared.lua" )
 include( "shared.lua" )
 
+-- #region Localized Functions
+
+-- Math.*
+local math_random = math.random
+local math_min = math.min
+local math_cos = math.cos
+local math_sin = math.sin
+local math_rad = math.rad
+
+-- table.*
+local table_insert  = table.insert
+
+-- timer.*
+local timer_Create = timer.Create
+local timer_Simple = timer.Simple
+local timer_Remove = timer.Remove
+
+-- ents.*
+local ents_Create = ents.Create
+
+-- Misc
+local IsValid = IsValid
+local Vector = Vector
+local Angle = Angle
+
+-- #endregion
+
+
 function ENT:Initialize()
     self:SetModel( "models/hunter/blocks/cube025x025x025.mdl" )
     self:SetMoveType( MOVETYPE_NONE )
     self:SetSolid( SOLID_NONE )
 
-    timer.Simple( 0, function()
+    timer_Simple( 0, function()
         self:SetupNPCs()
     end )
 end
@@ -15,20 +43,20 @@ end
 --- @param npc Entity
 local function randomizeFlexes( npc )
     local maxFlexes = 96
-    local flexCount = math.min( maxFlexes, npc:GetFlexNum() )
+    local flexCount = math_min( maxFlexes, npc:GetFlexNum() )
 
     for i = 1, flexCount - 1 do
         local min, max = npc:GetFlexBounds( i )
-        local val = math.Rand( min, max )
+        local val = math_random( min, max )
 
         npc:SetFlexWeight( i, val )
     end
 
-    npc:SetFlexScale( math.Rand( 3, 5 ) )
+    npc:SetFlexScale( math_random( 3, 5 ) )
 end
 
 local function makeKleiner( pos )
-    local kleiner = ents.Create( "npc_kleiner" )
+    local kleiner = ents_Create( "npc_kleiner" )
 
     kleiner:SetPos( pos + Vector( 0, 0, 18 ) )
     kleiner:Spawn()
@@ -41,7 +69,6 @@ local function makeKleiner( pos )
     kleiner:ManipulateBonePosition( 6, Vector( 10, 5, 0 ) ) -- head position
     kleiner:ManipulateBonePosition( 5, Vector( 5, 10, 0 ) ) -- neck position
     kleiner:ManipulateBoneAngles( 4, Angle( 0, -20, 0 ) ) -- top spine angle
-
 
     -- long back
     kleiner:ManipulateBonePosition( 2, Vector( 5, 0, 0 ) )
@@ -82,10 +109,10 @@ do
         local points = {}
         for i = 0, steps do
             local angle = startAngle + ( endAngle - startAngle ) * ( i / steps )
-            local x = center.x + radius * math.cos( math.rad( angle ) )
+            local x = center.x + radius * math_cos( math_rad( angle ) )
             local y = center.y
-            local z = center.z + radius * math.sin( math.rad( angle ) )
-            table.insert( points, Vector( x, y, z ) )
+            local z = center.z + radius * math_sin( math_rad( angle ) )
+            table_insert( points, Vector( x, y, z ) )
         end
         return points
     end
@@ -119,7 +146,7 @@ do
     end
 
     local function makeGman( pos, headPos )
-        local gman = ents.Create( "npc_gman" )
+        local gman = ents_Create( "npc_gman" )
         gman:SetPos( pos )
         gman:Spawn()
 
@@ -129,7 +156,7 @@ do
         }
 
         -- TODO: We should really do this on client somewhere
-        timer.Simple( 0, function()
+        timer_Simple( 0, function()
             for i = 1, gman:GetBoneCount() do
                 if not exclude[i] then
                     gman:ManipulateBoneScale( i, vector_origin )
@@ -153,16 +180,16 @@ do
             gman:SetPos( pos + Vector( 0, 0, 18 ) )
             gman:SetParent( kleiner )
 
-            timer.Simple( i * 0.15, function()
+            timer_Simple( i * 0.15, function()
                 local snd = getSound( i )
                 local path = snd.snd
                 local level = snd.level or 75
                 local pitch = snd.pitch or 100
 
                 local timerName = timerPrefix .. "_" .. i
-                timer.Create( timerName, snd.duration * 1.3, 0, function()
+                timer_Create( timerName, snd.duration * 1.3, 0, function()
                     if not IsValid( gman ) then
-                        timer.Remove( timerName )
+                        timer_Remove( timerName )
                         return
                     end
 
@@ -177,7 +204,7 @@ function ENT:StartKleinerLoop()
     local kleiner = self.Kleiner
     local timerName = "YouNeedMe_KleinerLoop_" .. self:EntIndex()
 
-    timer.Create( timerName, 5, 0, function()
+    timer_Create( timerName, 5, 0, function()
         if not IsValid( kleiner ) then return end
 
         local pos = kleiner:GetPos()
@@ -199,7 +226,7 @@ function ENT:StartKleinerLoop()
     end )
 
     kleiner:CallOnRemove( "YouNeedMe_KleinerLoopStop", function()
-        timer.Remove( timerName )
+        timer_Remove( timerName )
     end )
 end
 
