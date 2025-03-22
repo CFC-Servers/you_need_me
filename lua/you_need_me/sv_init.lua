@@ -10,6 +10,7 @@ YNM.ActiveTransformations = {}
 
 -- Math.*
 local math_random = math.random
+local math_floor = math.floor
 local math_min = math.min
 local math_cos = math.cos
 local math_sin = math.sin
