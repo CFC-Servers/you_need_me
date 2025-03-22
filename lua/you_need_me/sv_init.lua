@@ -153,6 +153,16 @@ YNM.HostBodyManipulations = {
     },
 }
 
+YNM.BoneBreakSounds = {
+    "physics/body/body_medium_break2.wav",
+    "physics/body/body_medium_break3.wav",
+    "physics/body/body_medium_break4.wav",
+    "physics/flesh/flesh_squishy_impact_hard1.wav",
+    "physics/flesh/flesh_squishy_impact_hard2.wav",
+    "physics/flesh/flesh_squishy_impact_hard3.wav",
+    "physics/flesh/flesh_squishy_impact_hard4.wav",
+}
+
 -- #endregion
 
 -- #region Bone Manipulation Functions
@@ -236,7 +246,28 @@ function YNM.ResetBoneManipulations( ent )
     end
 end
 
---#endregion
+-- #region Sounds
+
+--- @type table<Entity, YouNeedMe.BoneBreakSoundData>
+YNM.RecentSounds = {}
+
+--- Plays a sound to indicate that a bone has been moved
+--- @param ent Entity The Entity whose bone was moved
+--- @param boneid integer The ID of the bone that was moved
+function YNM.PlayBoneBreakSound( ent, boneid )
+
+    local length = ent:BoneLength( boneid )
+
+    -- 55 is the approximate length of the longest bone in the Kleiner player model
+    local lengthPercent = math_min( length / 55, 1 )
+
+    local pitch = 100 - ( lengthPercent * 50 )
+
+    local soundName = YNM.BoneBreakSounds[math_random( 1, #YNM.BoneBreakSounds )]
+    sound_Play( soundName, ent:GetPos(), 75, pitch, 1 )
+end
+
+-- #endregion
 
 do
     local skipChance = 0.75
