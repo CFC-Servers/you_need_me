@@ -400,13 +400,11 @@ do
     local painSoundCount = #painSounds
 
     local boneBreakSounds = {
+        "physics/plastic/plastic_barrel_impact_bullet1.wav",
+        "physics/plastic/plastic_box_break2.wav",
         "physics/body/body_medium_break2.wav",
         "physics/body/body_medium_break3.wav",
         "physics/body/body_medium_break4.wav",
-        "physics/flesh/flesh_squishy_impact_hard1.wav",
-        "physics/flesh/flesh_squishy_impact_hard2.wav",
-        "physics/flesh/flesh_squishy_impact_hard3.wav",
-        "physics/flesh/flesh_squishy_impact_hard4.wav",
     }
     local boneBreakSoundCount = #boneBreakSounds
 
