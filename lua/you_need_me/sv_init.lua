@@ -234,7 +234,7 @@ function YNM.SetBoneAngleOffset( ent, boneId, angleOffset )
 end
 
 --- Resets the position, angle, and scale of all bones on an Entity
----@param ent Entity The Entity whose bones will be reset
+--- @param ent Entity The Entity whose bones will be reset
 function YNM.ResetBoneManipulations( ent )
     for _, manipulationData in ipairs( YNM.HostBodyManipulations ) do
         local bone = ent:LookupBone( manipulationData.BoneName )
@@ -246,6 +246,108 @@ function YNM.ResetBoneManipulations( ent )
         end
     end
 end
+
+-- #endregion
+
+-- #region Transformation
+
+--- Begins the transformation of an Entity's bones
+--- @param ent Entity The Entity whose bones will be transformed
+--- @param boneManipulationData YouNeedMe.TransformationData The end goal of the transformation
+--- @param duration number The duration of the transformation, in seconds
+function YNM.StartTransformation( ent, boneManipulationData, duration )
+    local transformation = YNM.NewTransformationData( boneManipulationData, duration )
+    YNM.ActiveTransformations[ent] = transformation
+
+    -- Store starting values as needed
+    for _, boneManipulation in ipairs( transformation.BoneManipulations ) do
+        --- @cast boneManipulation YouNeedMe.BoneManipulationData
+
+        local boneId = ent:LookupBone( boneManipulation.BoneName )
+
+        if boneManipulation.EndPositionOffset then
+            boneManipulation.StartPositionOffset = ent:GetManipulateBonePosition( boneId )
+        end
+
+        if boneManipulation.EndAngleOffset then
+            boneManipulation.StartAngleOffset = ent:GetManipulateBoneAngles( boneId )
+        end
+
+        if boneManipulation.EndScale then
+            boneManipulation.StartScale = ent:GetManipulateBoneScale( boneId )
+        end
+    end
+end
+
+--- Bone breaking sounds will have at least this many seconds between them
+YNM.BoneBreakMinSoundInterval = 0.5
+
+--- Bone breaking sounds will happen at least once per this many seconds
+YNM.BoneBreakMaxSoundInterval = 1.5
+
+-- Update all transformations
+hook.Add( "Think", "Phatso_YouNeedMe_UpdateTransformations", function()
+    local time = CurTime()
+
+    -- Update each active transformation
+    for ent, transformation in pairs( YNM.ActiveTransformations ) do
+        --- @cast transformation YouNeedMe.TransformationData
+        --- @cast ent Entity
+
+        local progress = math_min( ( time - transformation.StartTime ) / transformation.Duration, 1 )
+
+        -- Manipulate each bone
+        for _, boneManipulation in ipairs( transformation.BoneManipulations ) do
+            --- @cast boneManipulation YouNeedMe.BoneManipulationData
+
+            local boneId = ent:LookupBone( boneManipulation.BoneName )
+
+            if boneManipulation.EndPositionOffset then
+                local startPos = boneManipulation.StartPositionOffset --- @type Vector
+                local endPos = boneManipulation.EndPositionOffset --- @type Vector
+
+                local stepFrequency = 1 + boneId
+                local lerpInput = math_floor( progress * stepFrequency ) / stepFrequency
+                --lerpInput = math.ease.InElastic( lerpInput )
+
+                local pos = LerpVector( lerpInput, startPos, endPos )
+                YNM.SetBonePositionOffset( ent, boneId, pos )
+            end
+
+            if boneManipulation.EndAngleOffset then
+                local startAng = boneManipulation.StartAngleOffset --- @type Angle
+                local endAng = boneManipulation.EndAngleOffset --- @type Angle
+
+                local stepFrequency = 2 + boneId
+                local lerpInput = math_floor( progress * stepFrequency ) / stepFrequency
+                --lerpInput = math.ease.InOutBounce( lerpInput )
+
+                local ang = LerpAngle( lerpInput, startAng, endAng )
+                YNM.SetBoneAngleOffset( ent, boneId, ang )
+            end
+
+            if boneManipulation.EndScale then
+                local startScale = boneManipulation.StartScale --- @type Vector
+                local endScale = boneManipulation.EndScale --- @type Vector
+
+                local stepFrequency = 3 + boneId
+                local lerpInput = math_floor( progress * stepFrequency ) / stepFrequency
+                --lerpInput = math.ease.InCubic( lerpInput )
+
+                local scale = LerpVector( lerpInput, startScale, endScale )
+                ent:ManipulateBoneScale( boneId, scale )
+            end
+        end
+
+        -- Stop the transformation if it's done
+        if time >= transformation.EndTime then
+            YNM.ActiveTransformations[ent] = nil
+        end
+    end
+end )
+
+
+-- #endregion
 
 -- #region Sounds
 
@@ -325,9 +427,12 @@ do
         ent:EmitSound( soundName, 75, 100, 1, CHAN_VOICE )
     end
 
-    local function setupSquence( ent )
-        local queue = table_Copy( YNM.BaseEntityManipulations )
-        local queueCount = #queue
+    --- 
+    --- @param ent Entity
+    --- @param boneManipulations YouNeedMe.BoneManipulationData[]
+    --- @return table
+    local function setupSquence( ent, boneManipulations )
+        local queue = table_Copy( YNM.HostBodyManipulations )
 
         -- Precompute some values that make our timer faster probably
         local boneCache = {}
@@ -341,11 +446,9 @@ do
             return cached
         end
 
-        for i = 1, queueCount do
-            local item = queue[i]
-
+        for _, item in ipairs( queue ) do
             item.steps = 0
-            item.perStep = item.value / itemSteps
+            item.stepSize = item.value / itemSteps
 
             local boneName = item.bone
             item.bone = lookupBone( boneName )
@@ -362,7 +465,7 @@ do
         -- Man yelling "No!"
         ent:EmitSound( "vo/npc/male01/no02.wav", 100, 100, 1, CHAN_VOICE )
 
-        local queue = setupSquence( ent )
+        local queue = setupSquence( ent, YNM.HostBodyManipulations )
 
         local timerName = "YouNeedMe_BoneManipulation_" .. ent:EntIndex()
         timer_Create( timerName, 0.02, 0, function()
