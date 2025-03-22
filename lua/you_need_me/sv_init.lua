@@ -1,18 +1,10 @@
 --- @class YouNeedMe
 YouNeedMe = YouNeedMe or {}
 
----@class YouNeedMe
+--- @class YouNeedMe
+--- @field ActiveTransformations table<Entity, YouNeedMe.TransformationData> A table of active transformations, indexed by the Entity being transformed
 local YNM = YouNeedMe
-
--- #region Class Definitions
-
---- @class YouNeedMe.BoneManipulationData
---- @field BoneName string The name of the bone being manipulated
---- @field PositionOffset Vector? The positional offset of the bone, relative to the bone's original position of (0, 0, 0)
---- @field AngleOffset Angle? The angular offset of the bone, relative to the bone's original angle of (0, 0, 0)
---- @field Scale Vector? The scale of the bone, relative to the bone's original scale of (1, 1, 1)
-
--- #endregion
+YNM.ActiveTransformations = {}
 
 -- #region Localized Functions
 
@@ -49,7 +41,49 @@ local IsValid = IsValid
 local Vector = Vector
 local Angle = Angle
 
---#endregion
+-- #endregion
+
+-- #region Classes
+
+--- @class YouNeedMe.BoneManipulationData
+--- @field BoneName string The name of the bone being manipulated
+--- @field StartPositionOffset Vector? The starting positional offset of the bone, relative to the bone's original position of (0, 0, 0)
+--- @field EndPositionOffset Vector? The final positional offset of the bone, relative to the bone's original position of (0, 0, 0)
+--- @field StartAngleOffset Angle? The starting angular offset of the bone, relative to the bone's original angle of (0, 0, 0)
+--- @field EndAngleOffset Angle? The final angular offset of the bone, relative to the bone's original angle of (0, 0, 0)
+--- @field StartScale Vector? The starting scale of the bone, relative to the bone's original scale of (1, 1, 1)
+--- @field EndScale Vector? The final scale of the bone, relative to the bone's original scale of (1, 1, 1)
+
+--- Represents a transformation in-progress
+--- A sequential table of YouNeedMe.BoneManipulationData with some additional properties
+--- @class YouNeedMe.TransformationData : table
+--- @field StartTime number The time at which the transformation began, in seconds, relative to CurTime
+--- @field EndTime number The time at which the transformation will end, in seconds, relative to CurTime
+--- @field Duration number The duration of the transformation, in seconds
+--- @field BoneManipulations YouNeedMe.BoneManipulationData[] The goal state of the Entity's bones
+
+--- Creates a new TransformationData object
+--- @param boneManipulations YouNeedMe.BoneManipulationData[] The data for the bone manipulations, which will be copied rather than referenced directly
+--- @param duration number The duration of the transformation, in seconds
+--- @return YouNeedMe.TransformationData
+function YNM.NewTransformationData( boneManipulations, duration )
+    local time = CurTime()
+
+    --- @type YouNeedMe.TransformationData
+    return {
+        StartTime = time,
+        EndTime   = time + duration,
+        Duration = duration,
+        BoneManipulations = table_Copy( boneManipulations )
+    }
+end
+
+--- Information about a bone breaking sound
+--- @class YouNeedMe.BoneBreakSoundData
+--- @field SoundName string The name of the sound that was played
+--- @field PlayTime number The time at which the sound was played, in seconds, relative to CurTime
+
+-- #endregion
 
 -- #region Constants
 
@@ -57,63 +91,65 @@ local DEFAULT_BONE_POSITION_OFFSET  = Vector( 0, 0, 0 )
 local DEFAULT_BONE_ANGLE_OFFSET     = Angle ( 0, 0, 0 )
 local DEFAULT_BONE_SCALE            = Vector( 1, 1, 1 )
 
+---@class YouNeedMe
+--- The bone manipulations to turn a Player into the host body for a YouNeedMe
 --- @type YouNeedMe.BoneManipulationData[]
-YNM.BaseEntityManipulations = {
+YNM.HostBodyManipulations = {
     { -- Head
         BoneName        = "ValveBiped.Bip01_Head1",
-        PositionOffset  = Vector( 10, 5, 0 ),
-        AngleOffset     = Angle ( 0, 95, 0 ),
-        Scale           = Vector( 1.2, 1.2, 1.2 )
+        EndPositionOffset  = Vector( 10, 5, 0 ),
+        EndAngleOffset     = Angle ( 0, 95, 0 ),
+        EndScale           = Vector( 1.2, 1.2, 1.2 )
     },
     { -- Neck
         BoneName        = "ValveBiped.Bip01_Neck1",
-        PositionOffset  = Vector( 5, 10, 0 ),
-        AngleOffset     = Angle ( 0, 25, 0 )
+        EndPositionOffset  = Vector( 5, 10, 0 ),
+        EndAngleOffset     = Angle ( 0, 25, 0 )
     },
     { -- Waist
         BoneName        = "ValveBiped.Bip01_Spine",
-        AngleOffset     = Angle ( 0, 105, 0 )
+        EndAngleOffset     = Angle ( 0, 105, 0 )
     },
     { -- Spine 1
         BoneName        = "ValveBiped.Bip01_Spine1",
-        PositionOffset  = Vector( 5, 0, 0 )
+        EndPositionOffset  = Vector( 5, 0, 0 )
     },
     { -- Spine 2
         BoneName        = "ValveBiped.Bip01_Spine2",
-        PositionOffset  = Vector( 5, 0, 0 )
+        EndPositionOffset  = Vector( 5, 0, 0 )
     },
     { -- Spine 4
         BoneName        = "ValveBiped.Bip01_Spine4",
-        AngleOffset     = Angle( 0, -20, 0 ),
-        PositionOffset  = Vector( 5, 0, 0 )
+        EndAngleOffset     = Angle( 0, -20, 0 ),
+        EndPositionOffset  = Vector( 5, 0, 0 )
     },
     { -- Left Shoulder
         BoneName        = "ValveBiped.Bip01_L_Clavicle",
-        AngleOffset     = Angle( 0, 0, -90 )
+        EndAngleOffset     = Angle( 0, 0, -90 )
     },
     { -- Right Shoulder
         BoneName        = "ValveBiped.Bip01_R_Clavicle",
-        AngleOffset     = Angle( 0, 0, 90 )
+        EndAngleOffset     = Angle( 0, 0, 90 )
     },
     { -- Right Arm
         BoneName        = "ValveBiped.Bip01_R_UpperArm",
-        PositionOffset  = Vector( 10, -10, -5 )
+        EndPositionOffset  = Vector( 10, -10, -5 )
     },
     { -- Right Thigh
         BoneName        = "ValveBiped.Bip01_R_Thigh",
-        PositionOffset  = Vector( -15, 0, -20 )
+        EndPositionOffset  = Vector( -15, 0, -20 )
     },
     { -- Left Thigh
         BoneName        = "ValveBiped.Bip01_L_Thigh",
-        PositionOffset  = Vector( 15, 0, -20 )
+        EndPositionOffset  = Vector( 15, 0, -20 )
     },
     { -- Right Calf
         BoneName        = "ValveBiped.Bip01_R_Calf",
-        PositionOffset  = Vector( 10, 20, 0 )
+        EndPositionOffset  = Vector( 10, 20, 0 )
     },
     { -- Left Calf
         BoneName        = "ValveBiped.Bip01_L_Calf",
-        PositionOffset  = Vector( 10, 20, 0 )
+        EndPositionOffset  = Vector( 10, 20, 0 )
     },
 }
 
