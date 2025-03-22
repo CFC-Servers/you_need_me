@@ -236,7 +236,7 @@ end
 --- Resets the position, angle, and scale of all bones on an Entity
 ---@param ent Entity The Entity whose bones will be reset
 function YNM.ResetBoneManipulations( ent )
-    for _, manipulationData in ipairs( YNM.BaseEntityManipulations ) do
+    for _, manipulationData in ipairs( YNM.HostBodyManipulations ) do
         local bone = ent:LookupBone( manipulationData.BoneName )
 
         if bone then
