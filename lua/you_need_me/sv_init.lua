@@ -155,7 +155,7 @@ YNM.HostBodyManipulations = {
 
 -- #endregion
 
---#region Bone Manipulation Functions
+-- #region Bone Manipulation Functions
 
 --- Sets the position, angle, and scale of a set of bones on an Entity
 --- @param ent Entity The Entity whose bones will be manipulated
@@ -165,16 +165,16 @@ function YNM.SetBoneManipulations( ent, boneManipulations )
         local bone = ent:LookupBone( manipulationData.BoneName )
 
         if bone then
-            if manipulationData.PositionOffset then
-                ent:ManipulateBonePosition( bone, manipulationData.PositionOffset )
+            if manipulationData.EndPositionOffset then
+                ent:ManipulateBonePosition( bone, manipulationData.EndPositionOffset )
             end
 
-            if manipulationData.AngleOffset then
-                ent:ManipulateBoneAngles( bone, manipulationData.AngleOffset )
+            if manipulationData.EndAngleOffset then
+                ent:ManipulateBoneAngles( bone, manipulationData.EndAngleOffset )
             end
 
-            if manipulationData.Scale then
-                ent:ManipulateBoneScale( bone, manipulationData.Scale )
+            if manipulationData.EndScale then
+                ent:ManipulateBoneScale( bone, manipulationData.EndScale )
             end
         end
     end
