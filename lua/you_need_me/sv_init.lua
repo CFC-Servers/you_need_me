@@ -180,6 +180,48 @@ function YNM.SetBoneManipulations( ent, boneManipulations )
     end
 end
 
+--- Sets the position of a bone on an Entity and plays an appropriate sound
+--- @param ent Entity The Entity whose bone will be manipulated
+--- @param boneId integer The ID of the bone to manipulate
+--- @param positionOffset Vector The new position offset of the bone
+function YNM.SetBonePositionOffset( ent, boneId, positionOffset )
+    local oldOffset = ent:GetManipulateBonePosition( boneId )
+
+    local distance = oldOffset:Distance( positionOffset )
+
+    local threshold = 1
+
+    -- Play a sound if the bone is being moved significantly
+    if distance > threshold then
+        YNM.PlayBoneMoveSound( ent )
+    end
+
+    ent:ManipulateBonePosition( boneId, positionOffset )
+end
+
+--- Sets the angle of a bone on an Entity and plays an appropriate sound
+--- @param ent Entity
+--- @param boneId integer
+--- @param angleOffset Angle
+function YNM.SetBoneAngleOffset( ent, boneId, angleOffset )
+    local oldOffset = ent:GetManipulateBoneAngles( boneId )
+
+    local distance = 0
+    distance = distance + math.abs( oldOffset.p - angleOffset.p )
+    distance = distance + math.abs( oldOffset.y - angleOffset.y )
+    distance = distance + math.abs( oldOffset.r - angleOffset.r )
+
+    local threshold = 20
+
+    -- Play a sound if the bone is being moved significantly
+    if distance > threshold then
+        print( distance )
+        YNM.PlayBoneMoveSound( ent, boneId )
+    end
+
+    ent:ManipulateBoneAngles( boneId, angleOffset )
+end
+
 --- Resets the position, angle, and scale of all bones on an Entity
 ---@param ent Entity The Entity whose bones will be reset
 function YNM.ResetBoneManipulations( ent )
